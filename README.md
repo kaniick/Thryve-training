@@ -1,13 +1,18 @@
-# Training
+# Thryve Training
 
-`seedypod/training`: off-device training for the models seedypod runs on the unit.
+> **Modified version.** Thryve is a rebranded, modified fork of
+> [SeedyPod](https://github.com/seedypod) by Jonathan Ng and the SeedyPod contributors.
+> This repository is forked from [seedypod/training](https://github.com/seedypod/training)
+> and remains under the AGPL-3.0 (see [LICENSE](LICENSE) and [NOTICE](NOTICE)).
+
+`kaniick/Thryve-training`: off-device training for the models thryve runs on the unit.
 The first is **pod-state**, a small CNN that names each pod `empty`, `sprouted`,
 `growing`, `ready` or `unhealthy` from its crop of a camera still.
 
 The unit, a Pi Zero W, has no runtime for ONNX, so core runs the model in plain
-TypeScript from a weights file ([ADR 0019](https://github.com/seedypod/core/blob/dev/docs/adr/0019-pluggable-capture-analysis.md),
+TypeScript from a weights file ([ADR 0019](https://github.com/kaniick/Thryve/blob/dev/docs/adr/0019-pluggable-capture-analysis.md),
 2026-11-09 amendment). This repository fits the model in PyTorch and writes that file.
-Core's [Capture analysis](https://github.com/seedypod/core/blob/dev/docs/ANALYSIS.md#the-learned-pod-state-analyser)
+Core's [Capture analysis](https://github.com/kaniick/Thryve/blob/dev/docs/ANALYSIS.md#the-learned-pod-state-analyser)
 guide covers the on-device side.
 
 ## Setup
@@ -23,7 +28,7 @@ uv sync --locked
 ## Train
 
 ```sh
-uv run --locked python scripts/train.py --pod seedypod.local --days 30 --version 2 --revision my-model-2026-12
+uv run --locked python scripts/train.py --pod thryve.local --days 30 --version 2 --revision my-model-2026-12
 ```
 
 `--pod` downloads a dataset export with photos from the unit (`GET /api/datasets/export`,
@@ -41,8 +46,8 @@ Upload it as a model revision (core #186). It needs the unit's result ingest tok
 (**Settings → Off-device storage and analysis**) and the file's SHA-256:
 
 ```sh
-curl -X POST "http://seedypod.local/api/models?sha256=$(shasum -a 256 data/run/pod-state.json | cut -d' ' -f1)&enable=1" \
-  -H "Authorization: Bearer $SEEDYPOD_INGEST_TOKEN" --data-binary @data/run/pod-state.json
+curl -X POST "http://thryve.local/api/models?sha256=$(shasum -a 256 data/run/pod-state.json | cut -d' ' -f1)&enable=1" \
+  -H "Authorization: Bearer $THRYVE_INGEST_TOKEN" --data-binary @data/run/pod-state.json
 ```
 
 An agent can do the same with core's MCP `upload_model`. An enabled revision runs on every
@@ -60,13 +65,13 @@ Labels come from the export, in this order:
 
 1. **Human labels** (core #184): `labels.jsonl`, one row per pod a grower tagged, with the
    pixel crop (`region`) and box (`box`) core used.
-2. **Weak labels** (`seedypod_training/weak_labels.py`) for everything else: whether the pod
+2. **Weak labels** (`thryve_training/weak_labels.py`) for everything else: whether the pod
    was planted by the still's date and how long before (`pods.json`), and the rule-based
    analysers' leaf cover (`analyses.jsonl`). A pod nobody planted that reads 0.5 % cover or
    less is `empty`; a planted one with cover is `sprouted`, `growing` or, past its harvest
    days, `ready`. The rules abstain when the signals disagree, skip stills taken with the
    light off, and never say `unhealthy`.
-3. **Synthetic plants** (`seedypod_training/synth.py`) for any class with fewer than 30 real
+3. **Synthetic plants** (`thryve_training/synth.py`) for any class with fewer than 30 real
    examples: leaves drawn onto real empty-pod crops, growing in number and size from
    `sprouted` to `ready`, yellow-brown for `unhealthy`. `--no-synthetic` turns this off.
 

@@ -1,12 +1,12 @@
 # Training guidance
 
-This repository trains seedypod's on-device models off the unit. Core
-([seedypod/core](https://github.com/seedypod/core)) runs them in plain TypeScript
+This repository trains thryve's on-device models off the unit. Core
+([kaniick/Thryve](https://github.com/kaniick/Thryve)) runs them in plain TypeScript
 (ADR 0019, 2026-11-09 amendment); this repository fits them and writes the weights file.
 
 ## Layout
 
-- `seedypod_training/`: the package. `preprocess.py` (pod crops), `model.py` (network and
+- `thryve_training/`: the package. `preprocess.py` (pod crops), `model.py` (network and
   weights file), `dataset.py` (core's dataset export), `weak_labels.py`, `synth.py`,
   `evaluate.py`, `train.py`.
 - `scripts/train.py`: the training CLI. `scripts/make_parity_fixture.py`: the fixture core's

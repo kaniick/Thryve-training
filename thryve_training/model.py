@@ -3,7 +3,7 @@
 The architecture is what core's plain-TypeScript forward pass (src/vision/cnn.ts)
 can run: 3x3 convolutions (stride 1, padding 1) each followed by ReLU, 2x2 max
 pools, a global average pool, then dense layers. The weights file
-(`seedypod-cnn`, format version 1) is JSON: a header that describes the input,
+(`thryve-cnn`, format version 1) is JSON: a header that describes the input,
 the layers and the classes, and each tensor as little-endian float32 in base64.
 """
 
@@ -20,7 +20,9 @@ from torch import nn
 
 from .preprocess import ModelInput
 
-FORMAT = "seedypod-cnn"
+FORMAT = "thryve-cnn"
+# Weights files written before the Thryve rebrand (upstream seedypod) still load.
+LEGACY_FORMATS = ("seedypod-cnn",)
 FORMAT_VERSION = 1
 CLASSES = ("empty", "sprouted", "growing", "ready", "unhealthy")
 
@@ -108,7 +110,7 @@ def to_file(model: PodStateNet, inp: ModelInput, *, version: int, revision: str,
 
 def from_file(doc: dict) -> tuple[PodStateNet, ModelInput]:
     """Rebuild the network from a weights file (the reverse of `to_file`)."""
-    if doc.get("format") != FORMAT or doc.get("formatVersion") != FORMAT_VERSION:
+    if doc.get("format") not in (FORMAT, *LEGACY_FORMATS) or doc.get("formatVersion") != FORMAT_VERSION:
         raise ValueError(f"not a {FORMAT} v{FORMAT_VERSION} file")
     widths = [layer["out"] for layer in doc["layers"] if layer["type"] == "conv3x3"]
     i = doc["input"]

@@ -1,7 +1,7 @@
 [project]
-name = "seedypod-training"
+name = "thryve-training"
 version = "0.1.0"
-description = "Off-device training for seedypod's on-device pod-state classifier"
+description = "Off-device training for thryve's on-device pod-state classifier"
 license = "AGPL-3.0-only"
 requires-python = ">=3.11,<3.12"
 dependencies = [

@@ -1,11 +1,11 @@
-# Weights file: `seedypod-cnn` v1
+# Weights file: `thryve-cnn` v1
 
 The file core reads from `models/pod-state.json` (`src/vision/cnn.ts` parses it). One JSON
-object; `seedypod_training/model.py` writes it with `to_file`.
+object; `thryve_training/model.py` writes it with `to_file`.
 
 | Field | Meaning |
 |---|---|
-| `format`, `formatVersion` | `"seedypod-cnn"`, `1` |
+| `format`, `formatVersion` | `"thryve-cnn"`, `1` (files written before the Thryve rebrand say `"seedypod-cnn"`; they still load) |
 | `analyzer` | The analyser it is for: `pod-state` |
 | `version` | The analyser version core stores results under. A new model needs a new one. |
 | `revision` | A name for this training run, e.g. `bootstrap-2026-11` |
