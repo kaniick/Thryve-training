@@ -1,0 +1,13 @@
+Thryve is a modified version of SeedyPod.
+
+This repository is a fork of https://github.com/seedypod/training, part of the SeedyPod project
+(https://github.com/seedypod), originally written by Jonathan Ng and the
+SeedyPod contributors. Copyright (C) 2026 Jonathan Ng and the SeedyPod contributors.
+
+Modifications: from November 2026 this fork has been renamed and rebranded from
+"SeedyPod" to "Thryve" (names, identifiers, URLs, and brand assets) and is developed
+further at https://github.com/kaniick. Modifications Copyright (C) 2026 the Thryve contributors.
+
+Thryve is not affiliated with or endorsed by the SeedyPod project. The original
+copyright and license notices are kept; this work remains under the GNU Affero General Public License v3.0
+(see LICENSE).

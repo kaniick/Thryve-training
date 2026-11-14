@@ -1,6 +1,6 @@
 """Read a dataset export from core (`GET /api/datasets/export`, ADR 0019).
 
-Layout (format `seedypod-dataset` v1, under one root folder in the tar):
+Layout (format `thryve-dataset` v1, under one root folder in the tar):
 
 - `manifest.json`, `captures.jsonl`, `analyses.jsonl`, `pods.json`, `grow_cycles.json`, `images/<captureId>.jpg`
 - with pod labels (core #184): `labels.jsonl`, one row per labelled pod
@@ -62,8 +62,9 @@ class Export:
         root = Path(root)
         manifest = json.loads((root / "manifest.json").read_text())
         name = manifest.get("format", {}).get("name")
-        if name != "seedypod-dataset":
-            raise ValueError(f"{root} is not a seedypod dataset export (format {name!r})")
+        # Units still on upstream seedypod (before the Thryve rebrand) export "seedypod-dataset".
+        if name not in ("thryve-dataset", "seedypod-dataset"):
+            raise ValueError(f"{root} is not a thryve dataset export (format {name!r})")
         regions = {c: default_regions(c) for c in ("upper", "lower")}
         # Boxes a file leaves out keep the measured default, as in core.
         for doc in ([json.loads((root / "regions.json").read_text())] if (root / "regions.json").exists() else []) + (

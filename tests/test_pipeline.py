@@ -19,13 +19,13 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from seedypod_training.dataset import Export, extract, iter_crops  # noqa: E402
-from seedypod_training.evaluate import rule_class, scores  # noqa: E402
-from seedypod_training.model import CLASSES, PodStateNet, from_file, logits_hwc, to_file  # noqa: E402
-from seedypod_training.preprocess import ModelInput, Rect, crop_input, crop_window  # noqa: E402
-from seedypod_training.regions import default_regions, parse_regions  # noqa: E402
-from seedypod_training.synth import leaf_fraction, paint  # noqa: E402
-from seedypod_training.weak_labels import weak_label  # noqa: E402
+from thryve_training.dataset import Export, extract, iter_crops  # noqa: E402
+from thryve_training.evaluate import rule_class, scores  # noqa: E402
+from thryve_training.model import CLASSES, PodStateNet, from_file, logits_hwc, to_file  # noqa: E402
+from thryve_training.preprocess import ModelInput, Rect, crop_input, crop_window  # noqa: E402
+from thryve_training.regions import default_regions, parse_regions  # noqa: E402
+from thryve_training.synth import leaf_fraction, paint  # noqa: E402
+from thryve_training.weak_labels import weak_label  # noqa: E402
 
 
 class Preprocess(unittest.TestCase):
@@ -73,6 +73,13 @@ class WeightsFile(unittest.TestCase):
         self.assertEqual(inp, ModelInput())
         self.assertLess(len(json.dumps(doc)), 500_000)
 
+    def test_reads_pre_rebrand_seedypod_files(self):
+        doc = to_file(PodStateNet(), ModelInput(), version=1, revision="t")
+        self.assertEqual(doc["format"], "thryve-cnn")
+        from_file({**doc, "format": "seedypod-cnn"})
+        with self.assertRaises(ValueError):
+            from_file({**doc, "format": "onnx"})
+
     def test_hwc_weight_layout_matches_a_hand_convolution(self):
         torch.manual_seed(2)
         model = PodStateNet((4,), classes=2)
@@ -90,9 +97,9 @@ class WeightsFile(unittest.TestCase):
 
 def _export(root: Path, labels: list[dict] | None = None) -> Path:
     """A tiny export: one bright and one dark still from the upper camera."""
-    folder = root / "seedypod-test-20261101-20261102"
+    folder = root / "thryve-test-20261101-20261102"
     (folder / "images").mkdir(parents=True)
-    (folder / "manifest.json").write_text(json.dumps({"format": {"name": "seedypod-dataset", "version": 1}}))
+    (folder / "manifest.json").write_text(json.dumps({"format": {"name": "thryve-dataset", "version": 1}}))
     caps = [{"id": "upper-a", "camera": "upper", "ts": "2026-11-01T12:00:00.000Z", "image": "images/upper-a.jpg"},
             {"id": "upper-b", "camera": "upper", "ts": "2026-11-01T23:00:00.000Z", "image": "images/upper-b.jpg"},
             {"id": "upper-c", "camera": "upper", "ts": "2026-11-02T01:00:00.000Z", "image": "images/upper-c.jpg"},
@@ -126,6 +133,15 @@ class Dataset(unittest.TestCase):
             self.assertIsNone(labels[("upper-a", 2)].label)  # cover on a pod nobody planted
             self.assertIsNone(labels[("upper-a", 3)].label)  # planted a month ago, no cover
             self.assertEqual(labels[("upper-b", 1)].reason, "dark still")
+
+    def test_reads_pre_rebrand_seedypod_exports(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = _export(Path(d))
+            (folder / "manifest.json").write_text(json.dumps({"format": {"name": "seedypod-dataset", "version": 1}}))
+            self.assertEqual(len(list(iter_crops(Export.load(folder)))), 45)
+            (folder / "manifest.json").write_text(json.dumps({"format": {"name": "other", "version": 1}}))
+            with self.assertRaises(ValueError):
+                Export.load(folder)
 
     def test_human_labels_and_their_boxes_win(self):
         label = {"captureId": "upper-a", "ts": "2026-11-01T12:00:00.000Z", "camera": "upper", "slot": 4, "label": "unhealthy",
